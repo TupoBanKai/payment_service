@@ -1,6 +1,6 @@
 class Transaction < ApplicationRecord
-  belonds_to :client
+  belongs_to :client
   belongs_to :product
 
-  scope :active, -> { where(type: "New" && order_id != null) }
+  scope :active, -> { where.not(order_id: nil).where(status: 'New') }
 end
