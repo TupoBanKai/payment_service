@@ -3,11 +3,14 @@ class ProductsController < ApplicationController
 
   def buy
     if @product.present?
-      @current_client.products.push(@product)
-      #(app/service/payment).start
-      # redirect
+      result = PaymentAdapter.new(@product, current_client).send_new_transaction
+      if result.include?('formUrl')
+        render json: { link: result['formUrl'] }
+      else
+        render json: { error: 'error', status: 404 }
+      end
     else
-      # redirect
+      render json: { error: 'something wrong' }
     end
   end
 
