@@ -4,8 +4,8 @@ class ProductsController < ApplicationController
   def buy
     if @product.present?
       result = PaymentAdapter.new(@product, current_client).send_new_transaction
-      if result.include?('formUrl')
-        render json: { link: result['formUrl'] }
+      if result.formUrl.present?
+        render json: { link: result.formUrl }
       else
         render json: { error: 'error', status: 404 }
       end

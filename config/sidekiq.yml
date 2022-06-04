@@ -1,0 +1,5 @@
+
+:schedule:
+  TimerJob:
+    every: "5m"
+    class: TimerJob
