@@ -6,6 +6,7 @@ ruby '2.5.8'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
 gem 'rails', '~> 6.0.5'
 gem 'faraday', '~> 1.10.0'
+gem 'dotenv-rails'
 # Use sqlite3 as the database for Active Record
 gem 'pg'
 # Use Puma as the app server
