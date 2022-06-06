@@ -2,7 +2,7 @@
 Payment srivece - bank communication app
 
 For project start:
-ruby 2.5.8
+ruby 2.5.8,
 bundle
 
 - cd /project
