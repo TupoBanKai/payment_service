@@ -7,10 +7,10 @@ class ProductsController < ApplicationController
       if result.formUrl.present?
         render json: { link: result.formUrl }
       else
-        render json: { error: 'error', status: 404 }
+        render json: { error: result["errorMessage"] }
       end
     else
-      render json: { error: 'something wrong' }
+      render json: { error: 'undefined product_id' }
     end
   end
 
@@ -19,5 +19,4 @@ class ProductsController < ApplicationController
   def find_product
     @product = Product.find(params[:id])
   end
-
 end

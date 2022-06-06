@@ -8,6 +8,8 @@ gem 'rails', '~> 6.0.5'
 gem 'faraday', '~> 1.10.0'
 gem 'sidekiq'
 gem 'sidekiq-scheduler'
+gem 'dotenv-rails'
+
 # Use sqlite3 as the database for Active Record
 gem 'pg'
 # Use Puma as the app server

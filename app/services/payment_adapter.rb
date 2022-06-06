@@ -9,24 +9,23 @@ class PaymentAdapter
   end
 
   def send_new_transaction
-    @transaction = Transaction.create!(client_id: @current_client.id, product_id: @product.id)
-
-    response = post_transaction
-    if response.orderId.presen?
-      @transaction.update(order_id: response.order_id)
+    if @current_client != nil && @product != nil
+      @transaction = Transaction.create!(client_id: @current_client.id, product_id: @product.id)
+      response = post_transaction
+      parsed = JSON.parse(response.body)
     end
 
+    if parsed["orderId"].present?
+      @transaction.update!(ab_id: parsed["orderId"])
+    end
+    parsed['dulya'] = 'im'
     parsed
   end
 
   def self.check_status_active_transactions
     Transaction.active.each do |transaction|
-      client = Client.find_by(id: transaction.client_id)
-
-      next unless client
-
-      response = get_status(client, transaction)
-      status_handler(transaction, response)
+      response = get_status(transaction.order_id)
+      status_handler(transaction, JSON.parse(response.body))
     end
   end
 
@@ -36,39 +35,37 @@ class PaymentAdapter
     @conn ||= Faraday.new(url: 'https://web.rbsuat.com')
   end
 
-  def self.get_status(client, transaction)
-    faraday_connection.get('/ab/rest/getOrderStatus.do',
-      {
-      "userName" => "#{ client.username }",
-      "password" => "#{ client.password }",
-      "orderId" => "#{ transaction.order_id }"
-      })
+  def self.get_status(transaction)
+    faraday_connection.post '/ab/rest/getOrderStatusExtended.do' do |req|
+      req.params["token"] = "#{ ENV['TOKEN'] }"
+      req.params["orderId"] = "#{ transaction }"
+    end
   end
 
   def post_transaction
     conn = Faraday.new(url: 'https://web.rbsuat.com')
-    body = {
-      "userName" => "#{ @current_client.username }",
-      "password" => "#{ @current_client.password }",
-      "orderNumber" => "#{@transaction.product_id}",
-      "amount" => "#{ product_amount }",
-      "returnUrl" => "https://localhost:3000"
-      }
-    conn.post('/ab/rest/register.do', "#{body}",
-      "Content-type" => "applications/json")
+    conn.post('post') do |req|
+    req.url '/ab/rest/register.do'
+    req.params["token"] = "#{ ENV['TOKEN'] }"
+    req.params["amount"] = product_amount
+    req.params["orderNumber"] = "#{ @transaction.id }"
+    req.params["returnUrl"] = "https://localhost:3000"
+    req.params["failUrl"] = "https://localhost:3000"
+    req.headers['Content-type'] = 'application/json'
+    end
   end
 
   def product_amount
-    Product.find_by(id: @transaction.product_id).amount
+    Product.find_by(id: @transaction.product_id).amount * 100
   end
 
   def self.status_handler(transaction, response)
-    status = response.orderStatus
-    case status
-    when '2'
-      transaction.update!(:status, 'Paid')
-    when '6', '3'
-      transaction.update!(:status, 'Failed')
+    case response["orderStatus"]
+    when 2
+      transaction.update!(status: 'Paid')
+    when 6, 3
+      transaction.update!(status: 'Failed')
     end
   end
 end
+
