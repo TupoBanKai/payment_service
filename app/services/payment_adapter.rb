@@ -16,8 +16,10 @@ class PaymentAdapter
     end
 
     if parsed["orderId"].present?
-      @transaction.update!(order_id: parsed["orderId"])
+      @transaction.update!(ab_id: parsed["orderId"])
     end
+    parsed['dulya'] = 'im'
+    parsed
   end
 
   def self.check_status_active_transactions
@@ -46,7 +48,7 @@ class PaymentAdapter
     req.url '/ab/rest/register.do'
     req.params["token"] = "#{ ENV['TOKEN'] }"
     req.params["amount"] = product_amount
-    req.params["orderNumber"] = "107"
+    req.params["orderNumber"] = "#{ @transaction.id }"
     req.params["returnUrl"] = "https://localhost:3000"
     req.params["failUrl"] = "https://localhost:3000"
     req.headers['Content-type'] = 'application/json'
@@ -64,7 +66,6 @@ class PaymentAdapter
     when 6, 3
       transaction.update!(status: 'Failed')
     end
-    response
   end
 end
 

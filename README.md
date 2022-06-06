@@ -1,24 +1,47 @@
 # README
+Payment srivece - bank communication app
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+For project start:
+ruby 2.5.8
+bundle
 
-Things you may want to cover:
+- cd /project
+- bundle
+- rake db:create
+- rake db:migrate
+- rake db:seed
+- rails s
 
-* Ruby version
+(to another terminal window)
 
-* System dependencies
+- cd /project
+- rails c
+- service = PaymentAdapter.new(Product.last, Client.last)
+- service.send_new_transaction - method for sending a created transaction for registration to the bank
 
-* Configuration
+- PaymentAdapter.check_status_active_transactions - method for sending all active transactions (status: "new", ad_id != nil) and then overwriting the transaction status with another one.
 
-* Database creation
 
-* Database initialization
+(to another terminal window)
 
-* How to run the test suite
+- bundle exec sidekiq - to start the timer for sending transactions
 
-* Services (job queues, cache servers, search engines, etc.)
+API:
 
-* Deployment instructions
+POST http://localhost:3000/products/:product_id/buy
 
-* ...
+success:
+
+response: {
+  {"link":"https://web.rbsuat.com/ab/merchants/typical/payment_ru.html?mdOrder=....}
+}
+
+failure:
+
+error: {
+  "undefined product_id"
+}
+
+response: {
+  "order with this id is already taken"
+}
